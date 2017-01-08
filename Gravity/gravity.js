@@ -11,17 +11,20 @@ calculate total force exerted on object
 update acceleration
 */
 
-class Point {
+class Vector {
 	constructor (x=0, y=0) {
 		this.x = x;
 		this.y = y;
+	}
+	magnitude () {
+		return Math.sqrt(this.x * this.x + this.y * this.y);
 	}
 	toString() {
 		return JSON.stringify(this);
 	}
 }
 
-class Gravy {
+class Body {
 	constructor (r, m, p, v, a, immovable) {
 		this.r = r;
 		this.m = m;
@@ -64,7 +67,7 @@ class Gravy {
 		for (let g of gs) {
 			if (g === this) {continue;}
 
-			let r = new Point();
+			let r = new Vector();
 			r.x = g.p.x - this.p.x;
 			r.y = g.p.y - this.p.y;
 			r.d = Math.sqrt(r.x * r.x + r.y * r.y);
@@ -85,9 +88,9 @@ class Gravy {
 	}
 }
 class Game {
-	constructor (can_id, number_of_gravies, G) {
+	constructor (can_id, number_of_bodies, G) {
 		this.last_update = -1;
-		this.gravies = [];
+		this.bodies = [];
 		this.G = G;
 		this.canvas = document.getElementById(can_id);
 		this.ctx = this.canvas.getContext("2d");
@@ -102,16 +105,16 @@ class Game {
 		let max_v = 30;
 		let min_v = 10;
 
-		this.gravies.push(new Gravy(
+		this.bodies.push(new Body(
 			5,
 			100000,
-			new Point(600,300),
-			new Point(0,0),
-			new Point(0,0),
+			new Vector(600,300),
+			new Vector(0,0),
+			new Vector(0,0),
 			true
 		));
 
-		for (let i = 0; i < number_of_gravies; i++) {
+		for (let i = 0; i < number_of_bodies; i++) {
 			let r = Math.round(Math.random() * (max_r - min_r)) + min_r;
 			let m = Math.round(Math.random() * (max_m - min_m)) + min_m;
 			let px = Math.round(Math.random() * (this.width - 2 * r)) + r;
@@ -120,23 +123,24 @@ class Game {
 			vx *= (Math.random() > 0.5) ? 1 : -1;
 			let vy = Math.round(Math.random() * (max_v - min_v)) + min_v;
 			vy *= (Math.random() > 0.5) ? 1 : -1;
-			let p = new Point(px, py);
-			let v = new Point(vx, vy);
-			let a = new Point(0, 0);
+			let p = new Vector(px, py);
+			let v = new Vector(vx, vy);
+			let a = new Vector(0, 0);
 
-			let g = new Gravy(r, m, p, v, a, false);
-			this.gravies.push(g);
+			let body = new Body(r, m, p, v, a, false);
+			this.bodies.push(body);
 		}
 	}
 	update (dt) {
-		for (let g of this.gravies)
-			g.update(this.G, this.gravies, dt, this);
+		// TODO: Calculate Force at this level
+		for (let b of this.bodies)
+			b.update(this.G, this.bodies, dt, this);
 	}
 	draw (ctx) {
 		ctx.clearRect(0, 0, this.width, this.height);
 
-		for (let g of this.gravies)
-			g.draw(ctx);
+		for (let b of this.bodies)
+			b.draw(ctx);
 	}
 	loop (timestamp) {
 		let dt = timestamp - this.last_update;
@@ -150,6 +154,10 @@ class Game {
 		});
 	}
 }
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 var game = new Game("can", 2, 0.01);
 
