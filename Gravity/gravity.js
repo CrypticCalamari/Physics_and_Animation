@@ -33,7 +33,7 @@ class Body {
 		this.a = a;
 		this.immovable = immovable;
 	}
-	update (G, gs, dt, game) {
+	update (G, bodiess, dt, game) {
 		if (this.immovable) {return;}
 		if (this.p.x < -this.r) {
 			this.p.x = game.width + this.r;
@@ -58,21 +58,21 @@ class Body {
 
 		this.a.x = 0;
 		this.a.y = 0;
-		for (let g of gs) {
-			if (g === this) {continue;}
+		for (let b of bodiess) {
+			if (b === this) {continue;}
 
 			let r = new Vector();
-			r.x = g.p.x - this.p.x;
-			r.y = g.p.y - this.p.y;
+			r.x = b.p.x - this.p.x;
+			r.y = b.p.y - this.p.y;
 			r.d = Math.sqrt(r.x * r.x + r.y * r.y);
 			
-			let F = g.m / (r.d * r.d);
+			let F = b.m / ((r.d * r.d) + 10);
 			
 			this.a.x += F * r.x / r.d;
 			this.a.y += F * r.y / r.d;
 		}
-		this.a.x *= G * dt;
-		this.a.y *= G * dt;
+		this.a.x *= G;
+		this.a.y *= G;
 		
 		this.v.x += this.a.x * dt / 1000;
 		this.v.y += this.a.y * dt / 1000;
@@ -94,21 +94,21 @@ class Game {
 		this.G = G;
 		this.canvas = document.getElementById(can_id);
 		this.ctx = this.canvas.getContext("2d");
-		this.ctx.fillStyle = "rgb(0,0,0)";
+		this.ctx.fillStyle = "rgb(200,200,200)";
 		this.width = this.canvas.width;
 		this.height = this.canvas.height;
 
-		let max_r = 20;
-		let min_r = 5;
-		let max_m = 1000;
-		let min_m = 20;
+		let max_r = 30;
+		let min_r = 10;
+		let max_m = 10000;
+		let min_m = 5000;
 		let max_v = 40;
-		let min_v = 30;
+		let min_v = 25;
 
 		this.bodies.push(new Body(
 			5,
-			100000,
-			new Vector(800,300),
+			1000000,
+			new Vector(600,300),
 			new Vector(0,0),
 			new Vector(0,0),
 			true
@@ -116,7 +116,7 @@ class Game {
 
 		for (let i = 0; i < number_of_bodies; i++) {
 			let r = Math.round(Math.random() * (max_r - min_r)) + min_r;
-			let m = Math.round(Math.random() * (max_m - min_m)) + min_m;
+			let m = r * 1000;
 			let px = Math.round(Math.random() * (this.width - 2 * r)) + r;
 			let py = Math.round(Math.random() * (this.height - 2 * r)) + r;
 			let vx = Math.round(Math.random() * (max_v - min_v)) + min_v;
@@ -160,7 +160,7 @@ class Game {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var game = new Game("can", 20, 1);
+var game = new Game("can", 3, 1);
 
 requestAnimationFrame((timestamp) => {
 	game.last_update = timestamp;
