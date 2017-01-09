@@ -35,32 +35,26 @@ class Body {
 	}
 	update (G, gs, dt, game) {
 		if (this.immovable) {return;}
-		if ((this.p.x - this.r) <= 0) {
-			this.p.x = this.r;
-			this.v.x = -this.v.x;
-			this.a.x = -this.a.x;
+		if (this.p.x < -this.r) {
+			this.p.x = game.width + this.r;
+			this.v.x = this.v.x * 0.5;
+			this.a.x = this.a.x;
 		}
-		if (this.p.x + this.r >= game.width) {
-			this.p.x = game.width - this.r;
-			this.v.x = -this.v.x;
-			this.a.x = -this.a.x;
+		if (this.p.x > game.width + this.r) {
+			this.p.x = -this.r;
+			this.v.x = this.v.x * 0.5;
+			this.a.x = this.a.x;
 		}
-		if (this.p.y - this.r <= 0) {
-			this.p.y = this.r;
-			this.v.y = -this.v.y;
-			this.a.y = -this.a.y;
+		if (this.p.y < -this.r) {
+			this.p.y = game.height + this.r;
+			this.v.y = this.v.y * 0.5;
+			this.a.y = this.a.y;
 		}
-		if (this.p.y + this.r >= game.height) {
-			this.p.y = game.height - this.r;
-			this.v.y = -this.v.y;
-			this.a.y = -this.a.y;
+		if (this.p.y > game.height + this.r) {
+			this.p.y = -this.r;
+			this.v.y = this.v.y * 0.5;
+			this.a.y = this.a.y;
 		}
-
-		this.p.x += this.v.x * dt / 100;
-		this.p.y += this.v.y * dt / 100;
-
-		this.v.x += this.a.x * dt / 100;
-		this.v.y += this.a.y * dt / 100;
 
 		this.a.x = 0;
 		this.a.y = 0;
@@ -77,8 +71,14 @@ class Body {
 			this.a.x += F * r.x / r.d;
 			this.a.y += F * r.y / r.d;
 		}
-		this.a.x *= G;
-		this.a.y *= G;
+		this.a.x *= G * dt;
+		this.a.y *= G * dt;
+		
+		this.v.x += this.a.x * dt / 1000;
+		this.v.y += this.a.y * dt / 1000;
+
+		this.p.x += this.v.x * dt / 1000;
+		this.p.y += this.v.y * dt / 1000;
 	}
 	draw (ctx) {
 		ctx.beginPath();
@@ -100,15 +100,15 @@ class Game {
 
 		let max_r = 20;
 		let min_r = 5;
-		let max_m = 10000;
-		let min_m = 2000;
-		let max_v = 30;
-		let min_v = 10;
+		let max_m = 1000;
+		let min_m = 20;
+		let max_v = 40;
+		let min_v = 30;
 
 		this.bodies.push(new Body(
 			5,
 			100000,
-			new Vector(600,300),
+			new Vector(800,300),
 			new Vector(0,0),
 			new Vector(0,0),
 			true
@@ -123,6 +123,7 @@ class Game {
 			vx *= (Math.random() > 0.5) ? 1 : -1;
 			let vy = Math.round(Math.random() * (max_v - min_v)) + min_v;
 			vy *= (Math.random() > 0.5) ? 1 : -1;
+			
 			let p = new Vector(px, py);
 			let v = new Vector(vx, vy);
 			let a = new Vector(0, 0);
@@ -159,7 +160,7 @@ class Game {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-var game = new Game("can", 2, 0.01);
+var game = new Game("can", 20, 1);
 
 requestAnimationFrame((timestamp) => {
 	game.last_update = timestamp;
